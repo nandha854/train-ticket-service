@@ -48,6 +48,8 @@ func (s *SeatManager) AssignSeat() (int, string, error) {
 	for seat, available := range section.AvailableSeats { 
 		if available == "Available" {
 			section.AvailableSeats[seat] = "Assigned"
+
+			// Simple round-robin to assign seats
 			if s.nextSection == "A" {
 				s.nextSection = "B"
 			} else {
@@ -80,30 +82,33 @@ func (s *SeatManager) ReleaseSeat(seat int, seatSection string) error {
 }
 
 func (s *SeatManager) ModifySeat(seat int, seatSection string, newSeat int, newSection string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	// Modify seat
+	// Validate inputs before locking
 	oldSection, ok := s.Sections[seatSection]
-
 	if !ok {
-		return fmt.Errorf("section not found")
+		return fmt.Errorf("old section not found")
 	}
 
 	nwSection, ok := s.Sections[newSection]
-
 	if !ok {
-		return fmt.Errorf("section not found")
+		return fmt.Errorf("new section not found")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	// Check seat assignment
+	if oldSection.AvailableSeats[seat] != "Assigned" {
+		return fmt.Errorf("old seat is not assigned")
 	}
 
 	if nwSection.AvailableSeats[newSeat] != "Available" {
-		return fmt.Errorf("seat is not available")
+		return fmt.Errorf("new seat is not available")
 	}
 
-	if oldSection.AvailableSeats[seat] == "Assigned" {
-		oldSection.AvailableSeats[seat] = "Available"
-	}
-	
+	// Swap seat assignments
+	oldSection.AvailableSeats[seat] = "Available"
 	nwSection.AvailableSeats[newSeat] = "Assigned"
+
 	return nil
 }
+
