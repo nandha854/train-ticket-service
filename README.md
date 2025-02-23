@@ -128,6 +128,10 @@ protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=p
 ```sh
 go run main.go
 ```
+### Or else you can run the executable directly in Ubuntu
+```sh
+./ticketBookingService
+```
 
 ### **4. Client Request Example**
 You can use a clients/examples.go to play with API's
