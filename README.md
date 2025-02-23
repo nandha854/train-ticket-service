@@ -121,7 +121,7 @@ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 
 ### **2. Compile the Protocol Buffers**
 ```sh
-protoc --go_out=. --go-grpc_out=. proto/ticketBooking.proto
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/ticketBooking.proto
 ```
 
 ### **3. Run the Server**
