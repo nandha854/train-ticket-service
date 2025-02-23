@@ -4,10 +4,9 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/nandha854/train-ticket-service/proto" // Update with the correct path
+	pb "github.com/nandha854/train-ticket-service/proto"
 	"github.com/nandha854/train-ticket-service/service"
 	"google.golang.org/grpc"
-	// You may need to import the generated protobuf files
 )
 
 func main(){
