@@ -21,6 +21,7 @@ service TicketService {
 ### **1. Ticket Management**
 - **PurchaseTicket:** Allows users to purchase tickets and assigns them a seat.
 - **GetReceipt:** Retrieves the ticket receipt for a specific user.
+- **GetUsersBySection:** Retrieves all users seated in a specific section.
 - **RemoveUser:** Cancels a ticket and releases the assigned seat.
 - **ModifyUserSeat:** Allows users to change their seat allocation.
 
@@ -28,7 +29,6 @@ service TicketService {
 - **Seat allocation:** Seats are assigned in a round-robin manner across sections.
 - **Seat modification:** Users can request to change their assigned seats.
 - **Seat release:** When a ticket is canceled, the seat becomes available again.
-- **Section-based queries:** Retrieve users seated in a specific section.
 
 ## Messages Definition
 
@@ -130,7 +130,7 @@ go run main.go
 ```
 
 ### **4. Client Request Example**
-You can use a clients/examples.go to play with server
+You can use a clients/examples.go to play with API's
 ```sh
 go run client/examples.go
 ```
