@@ -1,123 +1,137 @@
-# Train Ticket Service
+# Train Ticket Booking Service - gRPC API
 
-This service manages train ticket bookings, including seat assignments, ticket purchases, and modifications.
+## Overview
+The **Train Ticket Booking Service** is a gRPC-based system that allows users to book tickets, retrieve receipts, manage seat assignments, and cancel bookings.
 
-## Features
+## gRPC Service Definition
+The service is defined in the **ticketBooking.proto** file and includes the following RPC methods:
 
-- **Seat Management**: Assign, release, and modify seats.
-- **Ticket Management**: Purchase tickets, retrieve receipts, and manage user tickets.
-
-## gRPC API Specifications
-
-### PurchaseTicket
-
-**RPC**: `PurchaseTicket`
-
-**Request**:
-```protobuf
-message PurchaseTicketRequest {
-  User user = 1;
-  string from = 2;
-  string to = 3;
+### **TicketService**
+```proto
+service TicketService {
+  rpc PurchaseTicket(PurchaseTicketRequest) returns (TicketReceipt) {}
+  rpc GetReceipt(GetReceiptRequest) returns (TicketReceipt) {}
+  rpc GetUsersBySection(GetUsersBySectionRequest) returns (UsersBySectionResponse) {}
+  rpc RemoveUser(RemoveUserRequest) returns (RemoveUserResponse) {}
+  rpc ModifyUserSeat(ModifyUserSeatRequest) returns (TicketReceipt) {}
 }
 ```
 
-**Response**:
-```protobuf
+## Features
+### **1. Ticket Management**
+- **PurchaseTicket:** Allows users to purchase tickets and assigns them a seat.
+- **GetReceipt:** Retrieves the ticket receipt for a specific user.
+- **RemoveUser:** Cancels a ticket and releases the assigned seat.
+- **ModifyUserSeat:** Allows users to change their seat allocation.
+
+### **2. Seat Management**
+- **Seat allocation:** Seats are assigned in a round-robin manner across sections.
+- **Seat modification:** Users can request to change their assigned seats.
+- **Seat release:** When a ticket is canceled, the seat becomes available again.
+- **Section-based queries:** Retrieve users seated in a specific section.
+
+## Messages Definition
+
+### **User Information**
+```proto
+message User {
+  string first_name = 1;
+  string last_name = 2;
+  string email = 3;
+}
+```
+
+### **Ticket Booking Requests & Responses**
+```proto
+message PurchaseTicketRequest {
+  string from = 1;
+  string to = 2;
+  User user = 3;
+}
+
 message TicketReceipt {
-  User user = 1;
-  string from = 2;
-  string to = 3;
-  int32 price = 4;
+  string from = 1;
+  string to = 2;
+  User user = 3;
+  double price = 4;
   Seat seat = 5;
 }
 ```
 
-### GetReceipt
+### **Seat Management**
+```proto
+message Seat {
+  string section = 1;
+  int32 seat_number = 2;
+}
+```
 
-**RPC**: `GetReceipt`
-
-**Request**:
-```protobuf
+### **Ticket Lookup & Cancellation**
+```proto
 message GetReceiptRequest {
   string email = 1;
 }
-```
 
-**Response**:
-```protobuf
-message TicketReceipt {
-  User user = 1;
-  string from = 2;
-  string to = 3;
-  int32 price = 4;
-  Seat seat = 5;
-}
-```
-
-### GetUsersBySection
-
-**RPC**: `GetUsersBySection`
-
-**Request**:
-```protobuf
-message GetUsersBySectionRequest {
-  string section = 1;
-}
-```seat
-
-**Response**:
-```protobuf
-message UsersBySectionResponse {
-  repeated UserTicket users = 1;
-}
-```
-
-### RemoveUser
-
-**RPC**: `RemoveUser`
-
-**Request**:
-```protobuf
 message RemoveUserRequest {
   string email = 1;
 }
-```
 
-**Response**:
-```protobuf
 message RemoveUserResponse {
   string message = 1;
 }
 ```
 
-### ModifyUserSeat
-
-**RPC**: `ModifyUserSeat`
-
-**Request**:
-```protobuf
-message ModifyUserSeatRequest {
-  string email = 1;
-  Seat newSeat = 2;
+### **Section-wise User Retrieval**
+```proto
+message GetUsersBySectionRequest {
+  string section = 1;
 }
-```
 
-**Response**:
-```protobuf
-message TicketReceipt {
-  User user = 1;
-  string from = 2;
-  string to = 3;
-  int32 price = 4;
+message UserTicket {
+  User user = 3;
   Seat seat = 5;
 }
+
+message UsersBySectionResponse {
+  repeated UserTicket users = 1;
+}
 ```
 
-## Running Tests
+### **Seat Modification**
+```proto
+message ModifyUserSeatRequest {
+  string email = 1;
+  Seat new_seat = 2;
+}
+```
 
-To run the tests for the SeatManager, use the following command:
-
+## Running the Service
+### **1. Install Dependencies**
+Ensure you have `protoc` installed and the Go plugins for gRPC:
 ```sh
-go test ./service -v
+brew install protobuf  # macOS
+sudo apt install protobuf-compiler  # Linux
 ```
+
+Install gRPC dependencies for Go:
+```sh
+go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+```
+
+### **2. Compile the Protocol Buffers**
+```sh
+protoc --go_out=. --go-grpc_out=. proto/ticket_booking.proto
+```
+
+### **3. Run the Server**
+```sh
+go run main.go
+```
+
+### **4. Client Request Example**
+You can use a clients/examples.go to play with server
+```sh
+go run client/examples.go
+```
+
