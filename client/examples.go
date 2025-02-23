@@ -80,7 +80,7 @@ func main() {
 	// Modify User Seat	
 	modifyResp, err := client.ModifyUserSeat(context.Background(), &proto.ModifyUserSeatRequest{
 		Email: user.Email,
-		NewSeat: &proto.Seat{SeatNumber: getResp.Seat.GetSeatNumber(), Section: getResp.Seat.GetSection()},
+		NewSeat: &proto.Seat{SeatNumber: getResp.Seat.GetSeatNumber() + 1, Section: getResp.Seat.GetSection()},
 	})
 	if err != nil {
 		log.Fatalf("ModifyUserSeat failed: %v", err)

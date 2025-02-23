@@ -38,6 +38,14 @@ func TestPurchaseTicket(t *testing.T) {
 			},
 			expectError: true,
 		},
+		{
+			name: "Invalid Station Info",
+			request: &pb.PurchaseTicketRequest{
+				From: "Chennai",
+				To:   "Coimbatore",
+			},
+			expectError: true,
+		},
 	}
 
 	for _, tc := range tests {

@@ -3,12 +3,13 @@ package service
 import (
 	"fmt"
 	"sync"
-
 )
 
+// SeatManager handles the assignment, release, and modification of seats.
+// It manages seats across different sections in a round-robin manner.
 type SeatManager struct {
-	Sections map[string]*Section
-	mu       sync.Mutex
+	Sections    map[string]*Section
+	mu          sync.Mutex
 	nextSection string
 }
 
@@ -20,6 +21,7 @@ type Section struct {
 
 const MaxSeat = 100
 
+// NewSeatManager initializes a new SeatManager with predefined sections and seats.
 func NewSeatManager() *SeatManager {
 	return &SeatManager{
 		Sections: map[string]*Section{
@@ -30,6 +32,7 @@ func NewSeatManager() *SeatManager {
 	}
 }
 
+// initializeSeats creates a map of seats marked as "Available".
 func initializeSeats(count int) map[int]string {
 	seats := make(map[int]string)
 	for i := 1; i <= count; i++ {
@@ -38,14 +41,14 @@ func initializeSeats(count int) map[int]string {
 	return seats
 }
 
+// AssignSeat assigns the next available seat in a round-robin manner.
 func (s *SeatManager) AssignSeat() (int, string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	// Assign seat
 
 	section := s.Sections[s.nextSection]
 
-	for seat, available := range section.AvailableSeats { 
+	for seat, available := range section.AvailableSeats {
 		if available == "Available" {
 			section.AvailableSeats[seat] = "Assigned"
 
@@ -62,13 +65,12 @@ func (s *SeatManager) AssignSeat() (int, string, error) {
 	return 0, "", fmt.Errorf("no seats available")
 }
 
+// ReleaseSeat releases an assigned seat, making it available again.
 func (s *SeatManager) ReleaseSeat(seat int, seatSection string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	// Release seat
 
 	section, ok := s.Sections[seatSection]
-
 	if !ok {
 		return fmt.Errorf("Section not found")
 	}
@@ -81,6 +83,7 @@ func (s *SeatManager) ReleaseSeat(seat int, seatSection string) error {
 	return fmt.Errorf("seat is not assigned yet")
 }
 
+// ModifySeat changes the seat assignment from one seat to another.
 func (s *SeatManager) ModifySeat(seat int, seatSection string, newSeat int, newSection string) error {
 	// Validate inputs before locking
 	oldSection, ok := s.Sections[seatSection]
@@ -111,4 +114,3 @@ func (s *SeatManager) ModifySeat(seat int, seatSection string, newSeat int, newS
 
 	return nil
 }
-
