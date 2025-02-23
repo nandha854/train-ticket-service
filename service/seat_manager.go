@@ -18,13 +18,13 @@ type Section struct {
 	AvailableSeats map[int]string
 }
 
-const MaxSeats = 100
+const MaxSeat = 100
 
 func NewSeatManager() *SeatManager {
 	return &SeatManager{
 		Sections: map[string]*Section{
-			"A": {Name: "A", MaxSeats: 100, AvailableSeats: initializeSeats(100)},
-			"B": {Name: "B", MaxSeats: 100, AvailableSeats: initializeSeats(100)},
+			"A": {Name: "A", MaxSeats: MaxSeat, AvailableSeats: initializeSeats(MaxSeat)},
+			"B": {Name: "B", MaxSeats: MaxSeat, AvailableSeats: initializeSeats(MaxSeat)},
 		},
 		nextSection: "A",
 	}
@@ -82,8 +82,8 @@ func (s *SeatManager) ReleaseSeat(seat int, seatSection string) error {
 func (s *SeatManager) ModifySeat(seat int, seatSection string, newSeat int, newSection string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	// Modify seat
 
+	// Modify seat
 	oldSection, ok := s.Sections[seatSection]
 
 	if !ok {
@@ -101,10 +101,9 @@ func (s *SeatManager) ModifySeat(seat int, seatSection string, newSeat int, newS
 	}
 
 	if oldSection.AvailableSeats[seat] == "Assigned" {
-		s.ReleaseSeat(seat, seatSection)
+		oldSection.AvailableSeats[seat] = "Available"
 	}
-
+	
 	nwSection.AvailableSeats[newSeat] = "Assigned"
-
 	return nil
 }

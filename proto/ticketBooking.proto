@@ -46,8 +46,13 @@ message GetUsersBySectionRequest {
   string section = 1;
 }
 
+message UserTicket {
+  User user = 3;
+  Seat seat = 5;
+}
+
 message UsersBySectionResponse {
-  repeated TicketReceipt tickets = 1;
+  repeated UserTicket users = 1;
 }
 
 message RemoveUserRequest {
@@ -60,5 +65,5 @@ message RemoveUserResponse {
 
 message ModifyUserSeatRequest {
   string email = 1;
-  string new_section = 2;
+  Seat new_seat = 2;
 }
