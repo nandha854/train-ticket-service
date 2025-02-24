@@ -10,7 +10,8 @@ import (
 type SeatManager struct {
 	Sections    map[string]*Section
 	mu          sync.Mutex
-	nextSection string
+	nextSections []string
+	nextSection int
 }
 
 type Section struct {
@@ -19,16 +20,30 @@ type Section struct {
 	AvailableSeats map[int]string
 }
 
-const MaxSeat = 100
+type SectionConfigs struct {
+	SectionName string
+	MaxSeats    int
+}
+
 
 // NewSeatManager initializes a new SeatManager with predefined sections and seats.
-func NewSeatManager() *SeatManager {
+func NewSeatManager(sectionConfigs []SectionConfigs) *SeatManager {
+
+	sections := make(map[string]*Section)
+	nextSections := []string{}
+	for _, sectionConfig := range sectionConfigs {
+		sections[sectionConfig.SectionName] = &Section{
+			Name: sectionConfig.SectionName,
+			MaxSeats: sectionConfig.MaxSeats,
+			AvailableSeats: initializeSeats(sectionConfig.MaxSeats),
+		}
+		nextSections = append(nextSections, sectionConfig.SectionName)
+	}
+
 	return &SeatManager{
-		Sections: map[string]*Section{
-			"A": {Name: "A", MaxSeats: MaxSeat, AvailableSeats: initializeSeats(MaxSeat)},
-			"B": {Name: "B", MaxSeats: MaxSeat, AvailableSeats: initializeSeats(MaxSeat)},
-		},
-		nextSection: "A",
+		Sections: sections,
+		nextSections: nextSections,
+		nextSection: 0,
 	}
 }
 
@@ -46,18 +61,14 @@ func (s *SeatManager) AssignSeat() (int, string, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	section := s.Sections[s.nextSection]
+	section := s.Sections[s.nextSections[s.nextSection]]
 
 	for seat, available := range section.AvailableSeats {
 		if available == "Available" {
 			section.AvailableSeats[seat] = "Assigned"
 
 			// Simple round-robin to assign seats
-			if s.nextSection == "A" {
-				s.nextSection = "B"
-			} else {
-				s.nextSection = "A"
-			}
+			s.nextSection = (s.nextSection + 1) % len(s.nextSections)
 			return seat, section.Name, nil
 		}
 	}

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"sync"
 
@@ -17,13 +18,15 @@ type TicketManager struct {
 	SeatManager *SeatManager
 	Receipts    map[string]*pb.TicketReceipt
 	mu          sync.Mutex
+	StationConnection map[string]float64
 }
 
 // NewTicketManager initializes a new TicketManager with a SeatManager and an empty receipts map.
-func NewTicketManager() *TicketManager {
+func NewTicketManager(seatManager *SeatManager, stationConnection map[string]float64) *TicketManager {
 	return &TicketManager{
-		SeatManager: NewSeatManager(),
+		SeatManager: seatManager,
 		Receipts:    make(map[string]*pb.TicketReceipt),
+		StationConnection: stationConnection,
 	}
 }
 
@@ -39,7 +42,9 @@ func (t *TicketManager) PurchaseTicket(ctx context.Context, req *pb.PurchaseTick
 		return nil, status.Error(codes.InvalidArgument, "missing required fields")
 	}
 
-	if req.From != "London" || req.To != "France" {
+	// Validate the station names
+	connectionStations := fmt.Sprintf("%s-%s", req.From, req.To)
+	if t.StationConnection[connectionStations] == 0 {
 		log.Printf("PurchaseTicket request with invalid station: From=%s, To=%s", req.From, req.To)
 		return nil, status.Error(codes.InvalidArgument, "invalid station")
 	}
@@ -54,7 +59,7 @@ func (t *TicketManager) PurchaseTicket(ctx context.Context, req *pb.PurchaseTick
 		User:  req.User,
 		From:  req.From,
 		To:    req.To,
-		Price: 20.00,
+		Price: t.StationConnection[connectionStations],
 		Seat:  &pb.Seat{SeatNumber: int32(seat), Section: section},
 	}
 
@@ -152,7 +157,7 @@ func (t *TicketManager) ModifyUserSeat(ctx context.Context, req *pb.ModifyUserSe
 
 	if err := t.SeatManager.ModifySeat(int(receipt.Seat.SeatNumber), receipt.Seat.Section, int(req.NewSeat.SeatNumber), req.NewSeat.Section); err != nil {
 		log.Printf("ModifyUserSeat seat modification failed: %v", err)
-		return nil, err
+		return nil, status.Error(codes.InvalidArgument, "seat modification failed - " + err.Error())
 	}
 
 	receipt.Seat = req.NewSeat
