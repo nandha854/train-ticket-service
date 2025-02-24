@@ -139,3 +139,7 @@ You can use a clients/examples.go to play with API's
 go run client/examples.go
 ```
 
+### **5. Run the tests**
+```sh
+go test -v ./service
+```
