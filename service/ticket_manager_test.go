@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
 	pb "github.com/nandha854/train-ticket-service/proto"
@@ -241,7 +240,7 @@ func TestModifyUserSeat(t *testing.T) {
             name: "Assigning Already Taken Seat",
             request: &pb.ModifyUserSeatRequest{
                 Email:   userEmail,
-                NewSeat: &pb.Seat{SeatNumber: 30, Section: "A"},
+                NewSeat: &pb.Seat{SeatNumber: 20, Section: "A"},
             },
             expectError: true,
 			expectCode:  codes.InvalidArgument,
@@ -250,9 +249,6 @@ func TestModifyUserSeat(t *testing.T) {
 
     for _, tc := range tests {
         t.Run(tc.name, func(t *testing.T) {
-            // Make seat 20 available before each test
-			fmt.Println(tm.SeatManager.Sections["A"].AvailableSeats[30])
-			tm.SeatManager.Sections["A"].AvailableSeats[30] = "Assigned"
             resp, err := tm.ModifyUserSeat(context.Background(), tc.request)
 
             if tc.expectError {
